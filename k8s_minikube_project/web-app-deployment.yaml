@@ -1,0 +1,39 @@
+# web-app-deployment config file
+
+apiVersion: apps/v1 # this specifies the Kubernetes API group and version of this resource
+kind: Deployment # what are we doing? tells k8s that this is an application deployment
+metadata:
+  name: web-app-deployment # unique name related to this specific deployment
+  labels:
+    app: web-app-first-test # a key/value pair for the object, it can be used for example in scaling or in redundancy to link object
+spec:
+  replicas: 1 # how many are we deployng? :)
+  selector: # defines the label used to find the Pods managed ny this deployment
+    matchLabels:
+      app: web-app-first-test
+  template:
+    metadata:
+      lables:
+        app: web-app-first-test
+    spec:
+      containers: # here we are setting the Pod - so basically the blue print
+      - name: web-app-container
+        image: vkorobei/web-app-first-test:v1 # remember here to put the correct docker hub image! <docker-hub-image>/<name>:<version>
+        ports:
+        - containerPort: 80 # declares which port the application is listening to INSIDE the container
+
+---
+
+# setting up the access point to the service
+apiVersion: v1
+kind: Service # what type of service
+metadata:
+  name: web-app-service
+spec:
+  type: NodePort # exposes the service on a static port on the minikube VM's IP address and makes it accessible - without it this would be "useless" based on the objective
+  seector:
+    app: web-app-first-test # directing the traffic to the web app
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080 #specific port INSIDE the minikube host machine to be used for this application
